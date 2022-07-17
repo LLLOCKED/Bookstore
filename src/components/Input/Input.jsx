@@ -1,10 +1,29 @@
 import {SearchButtonClear, SearchInput, SearchWrapper} from "./styles";
+import {useMemo, useRef, useState} from "react";
+import debounce from 'lodash.debounce'
 
-export default function Input ({value, change}) {
+export default function Input ({change}) {
+
+    const [valueInp, setValueInp] = useState('');
+    const inputEl = useRef(null);
+
+    const clearSearch = () => {
+        setValueInp('');
+        change('');
+        inputEl.current.focus();
+    }
+
+    const debounceInput = useMemo(() => {return debounce((str) => change(str), 300)},[])
+
+    const onChangeInput = (e) => {
+        setValueInp(e.target.value);
+        debounceInput(e.target.value);
+    }
+
     return(
         <SearchWrapper>
-            <SearchInput value={value} onChange={(e) => change(e.target.value)} placeholder="Пошук книг..." />
-            {value ? <SearchButtonClear onClick={() => change('')}></SearchButtonClear> : null}
+            <SearchInput  ref={inputEl} value={valueInp} onChange={onChangeInput} placeholder="Пошук книг..." />
+            {valueInp ? <SearchButtonClear onClick={clearSearch}></SearchButtonClear> : null}
         </SearchWrapper>
     )
 }
